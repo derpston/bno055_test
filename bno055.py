@@ -84,7 +84,7 @@ class BNO055:
     gravity = partial(_registers, register=0x2e, struct='<hhh',
                       value=None, scale=1/100)
     calib_stat = partial(_register, register=0x35)
-    
+
     st_result = partial(_register, register=0x36)
     sys_error = partial(_register, register=0x3A)
     sys_status = partial(_register, register=0x39)
@@ -92,7 +92,7 @@ class BNO055:
     acc_offset = partial(_registers, register=0x55, struct='<hhh')
     mag_offset = partial(_registers, register=0x5B, struct='<hhh')
     gyr_offset = partial(_registers, register=0x61, struct='<hhh')
-    
+
     acc_radius = partial(_register, register=0x67, struct='<h')
     mag_radius = partial(_register, register=0x69, struct='<h')
 
