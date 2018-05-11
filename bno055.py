@@ -99,7 +99,10 @@ class BNO055:
     def init(self, mode=NDOF_MODE):
         chip_id = self._chip_id()
         if chip_id != _CHIP_ID:
-            raise RuntimeError("bad chip id (%x != %x)" % (chip_id, _CHIP_ID))
+            utime.sleep_ms(1000) # hold on for boot
+            chip_id = self._chip_id()
+            if chip_id != _CHIP_ID:
+                raise RuntimeError("bad chip id (%x != %x)" % (chip_id, _CHIP_ID)) #still not? ok bail
         self.reset()
         self._power_mode(_POWER_NORMAL)
         self._page_id(0)
