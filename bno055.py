@@ -3,7 +3,6 @@ import ustruct
 import utime
 from functools import partial
 
-
 _CHIP_ID = const(0xa0)
 
 CONFIG_MODE = const(0x00)
@@ -70,19 +69,19 @@ class BNO055:
     operation_mode = partial(_register, register=0x3d)
     temperature = partial(_register, register=0x34, value=None)
     accelerometer = partial(_registers, register=0x08, struct='<hhh',
-                            value=None, scale=1/100)
+                            value=None, scale=1 / 100)
     magnetometer = partial(_registers, register=0x0e, struct='<hhh',
-                           value=None, scale=1/16)
+                           value=None, scale=1 / 16)
     gyroscope = partial(_registers, register=0x14, struct='<hhh',
-                        value=None, scale=1/900)
+                        value=None, scale=1 / 900)
     euler = partial(_registers, register=0x1a, struct='<hhh',
-                    value=None, scale=1/16)
+                    value=None, scale=1 / 16)
     quaternion = partial(_registers, register=0x20, struct='<hhhh',
-                         value=None, scale=1/(1<<14))
+                         value=None, scale=1 / (1 << 14))
     linear_acceleration = partial(_registers, register=0x28, struct='<hhh',
-                                  value=None, scale=1/100)
+                                  value=None, scale=1 / 100)
     gravity = partial(_registers, register=0x2e, struct='<hhh',
-                      value=None, scale=1/100)
+                      value=None, scale=1 / 100)
     calib_stat = partial(_register, register=0x35)
 
     st_result = partial(_register, register=0x36)
@@ -108,7 +107,7 @@ class BNO055:
         self._page_id(0)
         self._system_trigger(0x00)
         self.operation_mode(mode)
-        utime.sleep_ms(100) # wait for the first measurement
+        utime.sleep_ms(100)  # wait for the first measurement
 
     def reset(self):
         self.operation_mode(CONFIG_MODE)
@@ -118,11 +117,19 @@ class BNO055:
             try:
                 chip_id = self._chip_id()
             except OSError as e:
-                if e.args[0] != 19: # errno 19 ENODEV
+                if e.args[0] != 19:  # errno 19 ENODEV
                     raise
                 chip_id = 0
             if chip_id == _CHIP_ID:
                 return
+
+    def get_calibration(self):
+        calib_stat = self.calib_stat()
+        mag = calib_stat & 3
+        accel = (calib_stat >> 2) & 3
+        gyro = (calib_stat >> 4) & 3
+        sys = (calib_stat >> 6) & 3
+        return mag, accel, gyro, sys
 
     def use_external_crystal(self, value):
         last_mode = self.operation_mode()

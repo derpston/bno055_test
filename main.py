@@ -18,11 +18,20 @@ while True:
         break
 
 sensor = bno055.BNO055(i2c, address=41)
+sensor.use_external_crystal(True)
+
+
 
 #sensor.operation_mode(bno055.COMPASS_MODE)
 sensor.operation_mode(bno055.NDOF_MODE)
 #sensor.operation_mode(bno055.M4G_MODE)
 #with open('bno055_readings.txt', 'a+') as file:
+
+#configuration
+while
+
+
+# Main code
 while True:
     try:
         ex, ey, ez = sensor.euler()
@@ -43,11 +52,8 @@ while True:
 
         print("% 4.2f % 4.2f %s result=%d err=%d status=%d" % (ex, yaw, bin(calib_stat), st_result, sys_error, sys_status))
 
+        mag_status, acc_status, gyr_status, sys_status = sensor.get_calibration()
 
-        mag_status = calib_stat & 3
-        acc_status = (calib_stat >> 2) & 3
-        gyr_status = (calib_stat >> 4) & 3
-        sys_status = (calib_stat >> 6) & 3
 
         print("mag_status=%d acc_status=%d gyr_status=%d sys_status=%d" % (mag_status, acc_status, gyr_status, sys_status))
 
@@ -56,16 +62,16 @@ while True:
         mag = "x=%d y=%d z=%d" % sensor.mag_offset()
         gyr = "x=%d y=%d z=%d" % sensor.gyr_offset()
 
-        sensor.operation_mode(bno055.CONFIG_MODE)
+        #sensor.operation_mode(bno055.CONFIG_MODE)
 
-        print("cal acc=(%s) mag=(%s) gyr=(%s) acc_r=%d mag_r=%d" % (acc, mag, gyr, sensor.acc_radius(), sensor.mag_radius()))
+        #print("cal acc=(%s) mag=(%s) gyr=(%s) acc_r=%d mag_r=%d" % (acc, mag, gyr, sensor.acc_radius(), sensor.mag_radius()))
 
 
         #file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (str(ex), str(yaw), str(st_result), str(sys_error), str(sys_status), str(mag_status), str(acc_status), str(gyr_status), str(sys_status)))
         # file.write(str(ex))
 
-        sensor._system_trigger(1) # Run a self test.
-        sensor.operation_mode(bno055.NDOF_MODE)
+        #sensor._system_trigger(1) # Run a self test.
+        #sensor.operation_mode(bno055.NDOF_MODE)
         #print("% 4.2f % 4.2f % 4.2f  % -50s %d %s %s" % (x, y, z, sensor.quaternion(), sensor.temperature(), bin(sensor.calib_stat()[0]), bin(sensor.calib_stat()[1])))
 
     except OSError as e:
