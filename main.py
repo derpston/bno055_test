@@ -1,36 +1,42 @@
-import time
-import pyb
+import time, math, bno055
+from machine import I2C, Pin
 
-led = pyb.Pin("C6", pyb.Pin.OUT_PP)
+print("Starting main.py")
+time.sleep(1)
 
-import machine
-i = machine.I2C(-1, scl=pyb.Pin.cpu.C9, sda=pyb.Pin.cpu.A8, freq=400000, timeout=10000)
-i.scan()
+#led = Pin(2, Pin.OUT)
 
-import bno055
-#s = bno055.BNO055(i)
+i2c = I2C(-1, Pin(5), Pin(4), freq=400000, timeout=10000)
+# i2c.scan()
+
+print("Starting I2C scan")
 
 while True:
-    devices = i.scan()
+    devices = i2c.scan()
     print("Found devices: %s" % (repr(devices)))
     if 41 in devices:
         break
 
-s = bno055.BNO055(i, address=41)
+sensor = bno055.BNO055(i2c, address=41)
+sensor.use_external_crystal(True)
 
-time.sleep(1)
 
-#s.operation_mode(bno055.COMPASS_MODE)
-s.operation_mode(bno055.NDOF_MODE)
-#s.operation_mode(bno055.M4G_MODE)
 
-import math
+#sensor.operation_mode(bno055.COMPASS_MODE)
+sensor.operation_mode(bno055.NDOF_MODE)
+#sensor.operation_mode(bno055.M4G_MODE)
+#with open('bno055_readings.txt', 'a+') as file:
 
+#configuration
+while
+
+
+# Main code
 while True:
     try:
-        ex, ey, ez = s.euler()
-        w, x, y, z = s.quaternion()
-        
+        ex, ey, ez = sensor.euler()
+        w, x, y, z = sensor.quaternion()
+
         ysqr = y * y
         t3 = +2.0 * (w * z + x * y)
         t4 = +1.0 - 2.0 * (ysqr + z * z)
@@ -39,25 +45,40 @@ while True:
         #yaw  = math.asin(2*x*y + 2*z*w)
         #yawdegrees = yaw * 180/math.pi
         #print("% 4.2f % 4.2f % 4.2f" % (ex, yaw, yawdegrees))
-        print("% 4.2f % 4.2f %s result=%d err=%d status=%d" % (ex, yaw, bin(s.calib_stat()), s.st_result(), s.sys_error(), s.sys_status()))
-        acc = "x=%d y=%d z=%d" % s.acc_offset()
-        mag = "x=%d y=%d z=%d" % s.mag_offset()
-        gyr = "x=%d y=%d z=%d" % s.gyr_offset()
-        s.operation_mode(bno055.CONFIG_MODE)
-        print("cal acc=(%s) mag=(%s) gyr=(%s) acc_r=%d mag_r=%d" % (acc, mag, gyr, s.acc_radius(), s.mag_radius()))
-        s._system_trigger(1) # Run a self test.
-        s.operation_mode(bno055.NDOF_MODE)
-        #print("% 4.2f % 4.2f % 4.2f  % -50s %d %s %s" % (x, y, z, s.quaternion(), s.temperature(), bin(s.calib_stat()[0]), bin(s.calib_stat()[1])))
+        calib_stat = sensor.calib_stat()
+        st_result = sensor.st_result()
+        sys_error = sensor.sys_error()
+        sys_status = sensor.sys_status()
+
+        print("% 4.2f % 4.2f %s result=%d err=%d status=%d" % (ex, yaw, bin(calib_stat), st_result, sys_error, sys_status))
+
+        mag_status, acc_status, gyr_status, sys_status = sensor.get_calibration()
+
+
+        print("mag_status=%d acc_status=%d gyr_status=%d sys_status=%d" % (mag_status, acc_status, gyr_status, sys_status))
+
+
+        acc = "x=%d y=%d z=%d" % sensor.acc_offset()
+        mag = "x=%d y=%d z=%d" % sensor.mag_offset()
+        gyr = "x=%d y=%d z=%d" % sensor.gyr_offset()
+
+        #sensor.operation_mode(bno055.CONFIG_MODE)
+
+        #print("cal acc=(%s) mag=(%s) gyr=(%s) acc_r=%d mag_r=%d" % (acc, mag, gyr, sensor.acc_radius(), sensor.mag_radius()))
+
+
+        #file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (str(ex), str(yaw), str(st_result), str(sys_error), str(sys_status), str(mag_status), str(acc_status), str(gyr_status), str(sys_status)))
+        # file.write(str(ex))
+
+        #sensor._system_trigger(1) # Run a self test.
+        #sensor.operation_mode(bno055.NDOF_MODE)
+        #print("% 4.2f % 4.2f % 4.2f  % -50s %d %s %s" % (x, y, z, sensor.quaternion(), sensor.temperature(), bin(sensor.calib_stat()[0]), bin(sensor.calib_stat()[1])))
+
     except OSError as e:
         print(dir(e))
-    time.sleep(1)
+
+    time.sleep(.1)
 
 
-#while True:
-#   for _ in range(3):
-#       led.on()
-#       time.sleep(0.1)
-#       led.off()
-#       time.sleep(0.1)
-#   time.sleep(0.5)
+
 
